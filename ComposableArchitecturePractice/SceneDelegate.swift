@@ -22,11 +22,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let contentView = ContentView(
-            store: Store(
-                initialState: AppState(),
-                reducer: appReducer,
-                environment: AppEnvironment()
-            )
+          store: Store(
+            initialState: AppState(
+              todos: [
+                Todo(id: UUID()),
+                Todo(id: UUID()),
+              ]
+            ),
+            reducer: appReducer.debug(),
+            environment: AppEnvironment()
+          )
         )
 
         // Use a UIHostingController as window root view controller.
