@@ -68,6 +68,32 @@ let appReducer: Reducer<AppState, AppAction, AppEnvironment> = todoReducer.forEa
     environment: { _ in TodoEnvironment() }
 )
 
+struct TodoView: View {
+    let store: Store<Todo, TodoAction>
+    
+    var body: some View {
+        WithViewStore(self.store) { viewStore in
+            HStack {
+                Button(action: {
+                    viewStore.send(.checkboxTapped)
+                }) {
+                    Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                TextField(
+                    "Untitled todo",
+                    text: viewStore.binding(
+                        get: \.description,
+                        send: TodoAction.textFieldChanged
+                    )
+                )
+            }
+            .foregroundColor(viewStore.isComplete ? .gray: nil)
+        }
+    }
+}
+
 struct ContentView: View {
     let store: Store<AppState, AppAction>
 
@@ -76,31 +102,9 @@ struct ContentView: View {
             WithViewStore(self.store) { viewStore in
                 List {
                     ForEachStore(
-                        self.store.scope(
-                            state: { $0.todos },
-                            action: { AppAction.todo(index: $0, action: $1) }
-                        )
-                    ) { todoStore in
-                        WithViewStore(todoStore) { todoViewStore in
-                            HStack {
-                                Button(action: {
-                                    todoViewStore.send(.checkboxTapped)
-                                }) {
-                                    Image(systemName: todoViewStore.isComplete ? "checkmark.square" : "square")
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                                
-                                TextField(
-                                    "Untitled todo",
-                                    text: todoViewStore.binding(
-                                        get: { $0.description },
-                                        send: { .textFieldChanged($0) }
-                                    )
-                                )
-                            }
-                            .foregroundColor(todoViewStore.isComplete ? .gray: nil)
-                        }
-                    }
+                        self.store.scope(state: \.todos, action: AppAction.todo(index:action:)),
+                        content: TodoView.init(store:)
+                    )
                 }
             }
         .navigationBarTitle("Todos")
