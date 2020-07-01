@@ -25,6 +25,7 @@ struct AppState: Equatable {
 //}
 
 enum AppAction {
+    case addButtonTapped
     case todo(index: Int, action: TodoAction)
 }
 
@@ -50,22 +51,22 @@ let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { state, action, _ 
     }
 }
 
-//let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-//    switch action {
-//    case .todoCheckboxTapped(index: let index):
-//        state.todos[index].isComplete.toggle()
-//        return .none
-//
-//    case .todoTextFieldChanged(index: let index, text: let text):
-//        state.todos[index].description = text
-//        return .none
-//    }
-//}
+let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+    todoReducer.forEach(
+        state: \AppState.todos,
+        action: /AppAction.todo(index:action:),
+        environment: { _ in TodoEnvironment() }
+    ),
+    Reducer { state, action, _ in
+        switch action {
+        case .addButtonTapped:
+            state.todos.insert(Todo(id: UUID()), at: 0)
+            return .none
 
-let appReducer: Reducer<AppState, AppAction, AppEnvironment> = todoReducer.forEach(
-    state: \AppState.todos,
-    action: /AppAction.todo(index:action:),
-    environment: { _ in TodoEnvironment() }
+        case .todo(index: _, action: _):
+            return .none
+        }
+    }
 )
 
 struct TodoView: View {
@@ -106,6 +107,9 @@ struct ContentView: View {
                         content: TodoView.init(store:)
                     )
                 }
+                .navigationBarItems(trailing: Button("Add") {
+                    viewStore.send(.addButtonTapped)
+                })
             }
         .navigationBarTitle("Todos")
         }
