@@ -19,19 +19,12 @@ struct AppState: Equatable {
     var todos: [Todo] = []
 }
 
-//enum AppAction {
-//    case todoCheckboxTapped(index: Int)
-//    case todoTextFieldChanged(index: Int, text: String)
-//}
-
 enum AppAction {
     case addButtonTapped
     case todo(index: Int, action: TodoAction)
 }
 
-struct AppEnvironment {
-
-}
+struct AppEnvironment {}
 
 enum TodoAction {
     case checkboxTapped
