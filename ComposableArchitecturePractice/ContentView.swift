@@ -60,13 +60,10 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             return .none
 
         case .todo(index: _, action: .checkboxTapped):
-            return .concatenate(
-                Effect.cancel(id: "todo completion effect"),
-                Effect(value: .todoDelayCompleted)
+            return Effect(value: .todoDelayCompleted)
                 .delay(for: 1, scheduler: DispatchQueue.main)
                 .eraseToEffect()
-                .cancellable(id: "todo completion effect")
-            )
+                .cancellable(id: "todo completion effect", cancelInFlight: true)
 
         case .todoDelayCompleted:
             state.todos = state.todos
