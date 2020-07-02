@@ -58,6 +58,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             state.todos.insert(Todo(id: environment.uuid()), at: 0)
             return .none
 
+        case .todo(index: _, action: .checkboxTapped):
+            state.todos = state.todos
+                .enumerated()
+                .sorted(by: { lhs, rhs in
+                    (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
+                })
+                .map(\.element)
+            return .none
         case .todo(index: _, action: _):
             return .none
         }
