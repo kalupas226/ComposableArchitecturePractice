@@ -13,22 +13,22 @@ import XCTest
 class ComposableArchitecturePracticeTests: XCTestCase {
     func testCompletingTodo() {
         let store = TestStore(
-            initialState: AppState(
-                todos: [
-                    Todo(
-                        id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
-                        description: "Milk",
-                        isComplete: false
-                    )
-                ]
-            ),
+            initialState: AppState(),
             reducer: appReducer,
-            environment: AppEnvironment()
+            environment: AppEnvironment(
+                uuid: { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
+            )
         )
         
         store.assert(
-            .send(.todo(index: 0, action: .checkboxTapped)) {
-                $0.todos[0].isComplete = true
+            .send(.addButtonTapped) {
+                $0.todos = [
+                    Todo(
+                        id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!,
+                        description: "",
+                        isComplete: false
+                    )
+                ]
             }
         )
     }
