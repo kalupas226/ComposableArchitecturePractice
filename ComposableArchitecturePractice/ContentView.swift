@@ -22,6 +22,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
     case addButtonTapped
     case todo(index: Int, action: TodoAction)
+    case todoDelayCompleted
 }
 
 struct AppEnvironment {
@@ -59,6 +60,10 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             return .none
 
         case .todo(index: _, action: .checkboxTapped):
+            return Effect(value: .todoDelayCompleted)
+                .delay(for: 1, scheduler: DispatchQueue.main)
+                .eraseToEffect()
+        case .todoDelayCompleted:
             state.todos = state.todos
                 .enumerated()
                 .sorted(by: { lhs, rhs in
@@ -66,7 +71,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
                 })
                 .map(\.element)
             return .none
-        case .todo(index: _, action: _):
+        default:
             return .none
         }
     }
