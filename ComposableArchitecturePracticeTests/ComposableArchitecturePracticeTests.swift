@@ -11,11 +11,14 @@ import XCTest
 @testable import ComposableArchitecturePractice
 
 class ComposableArchitecturePracticeTests: XCTestCase {
+    let scheduler = DispatchQueue.testScheduler
+
     func testAddTodo() {
       let store = TestStore(
         initialState: AppState(),
         reducer: appReducer,
         environment: AppEnvironment(
+            mainQueue: scheduler.eraseToAnyScheduler(),
             uuid: { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
         )
       )
@@ -51,6 +54,7 @@ class ComposableArchitecturePracticeTests: XCTestCase {
             ),
             reducer: appReducer,
             environment: AppEnvironment(
+                mainQueue: scheduler.eraseToAnyScheduler(),
                 uuid: { fatalError("umimplemented") }
             )
         )
@@ -60,7 +64,8 @@ class ComposableArchitecturePracticeTests: XCTestCase {
                 $0.todos[0].isComplete = true
             },
             .do {
-                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 1)
+//                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 1)
+                self.scheduler.advance(by: 1)
             },
             .receive(.todoDelayCompleted) {
                 $0.todos.swapAt(0, 1)
@@ -86,6 +91,7 @@ class ComposableArchitecturePracticeTests: XCTestCase {
             initialState: AppState(todos: todos),
             reducer: appReducer,
             environment: AppEnvironment(
+                mainQueue: scheduler.eraseToAnyScheduler(),
                 uuid: { fatalError("unimplemented") }
             )
         )
@@ -95,13 +101,15 @@ class ComposableArchitecturePracticeTests: XCTestCase {
                 $0.todos[0].isComplete = true
             },
             .do {
-                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 0.5)
+//                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 0.5)
+                self.scheduler.advance(by: 0.5)
             },
             .send(.todo(index: 0, action: .checkboxTapped)) {
                 $0.todos[0].isComplete = false
                 },
             .do {
-                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 1)
+//                _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 1)
+                self.scheduler.advance(by: 1)
                 },
             .receive(.todoDelayCompleted)
         )
